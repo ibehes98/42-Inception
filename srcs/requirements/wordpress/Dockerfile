@@ -6,7 +6,7 @@
 #    By: ibeltran <ibeltran@student.42madrid.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/10/06 12:08:57 by ibeltran          #+#    #+#              #
-#    Updated: 2026/10/06 13:31:24 by ibeltran         ###   ########.fr        #
+#    Updated: 2026/10/06 17:46:43 by ibeltran         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,7 +19,7 @@ RUN apt-get update \
 		mariadb-client curl ca-certificates \
 	&& rm -rf /var/lib/apt/lists/*
 
-RUN curl -fsSL -o /usr/local//bin/wp \
+RUN curl -fsSL -o /usr/local/bin/wp \
 		https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
 	&& chmod +x /usr/local/bin/wp
 
@@ -28,7 +28,6 @@ COPY tools/init.sh /usr/local/bin/init.sh
 
 RUN chmod +x /usr/local/bin/init.sh \
 	&& mkdir -p /run/php /var/www/html
-	&& chown -R www-data:www-data /var/www/html
 
 WORKDIR /var/www/html
 
