@@ -1,0 +1,168 @@
+services:
+  mariadb:
+    container_name: mariadb
+    build: ./requirements/mariadb
+    image: mariadb:inception
+    env_file: .env
+    secrets:
+      - db_root_password
+      - db_user_password
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - inception
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h localhost -u \"$$MYSQL_USER\" --password=\"$$(cat /run/secrets/db_user_password)\" --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  wordpress:
+    container_name: wordpress
+    build: ./requirements/wordpress
+    image: wordpress:inception
+    env_file: .env
+    secrets:
+      - wp_admin_password
+      - wp_user_password
+      - db_user_password
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - inception
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: always
+
+  nginx:
+    container_name: nginx
+    build: ./requirements/nginx
+    image: nginx:inception
+    env_file: .env
+    secrets:
+      - stats_password
+    ports:
+      - "443:443"
+    volumes:
+      - wordpress_data:/var/www/html:ro
+      - nginx_logs:/var/log/nginx/shared
+      - goaccess_report:/var/www/stats:ro
+    networks:
+      - inception
+    depends_on:
+      - wordpress
+      - static
+      - adminer
+      - goaccess
+    restart: always
+
+  redis:
+    container_name: redis
+    build: ./requirements/bonus/redis
+    image: redis:inception
+    networks:
+      - inception
+    restart: always
+
+  static:
+    container_name: static
+    build: ./requirements/bonus/static
+    image: static:inception
+    networks:
+      - inception
+    restart: always
+
+  adminer:
+    container_name: adminer
+    build: ./requirements/bonus/adminer
+    image: adminer:inception
+    networks:
+      - inception
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    restart: always
+
+  ftp:
+    container_name: ftp
+    build: ./requirements/bonus/ftp
+    image: ftp:inception
+    env_file: .env
+    secrets:
+      - ftp_password
+    ports:
+      - "21:21"
+      - "21100-21110:21100-21110"
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - inception
+    depends_on:
+      - wordpress
+    restart: always
+
+  goaccess:
+    container_name: goaccess
+    build: ./requirements/bonus/goaccess
+    image: goaccess:inception
+    env_file: .env
+    volumes:
+      - nginx_logs:/var/log/nginx/shared
+      - goaccess_report:/var/www/goaccess
+    networks:
+      - inception
+    restart: always
+
+volumes:
+  mariadb_data:
+    name: mariadb_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/mariadb
+  wordpress_data:
+    name: wordpress_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/wordpress
+  nginx_logs:
+    name: nginx_logs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/nginx_logs
+  goaccess_report:
+    name: goaccess_report
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/goaccess_report
+
+networks:
+  inception:
+    name: inception
+    driver: bridge
+
+secrets:
+  db_root_password:
+    file: ../secrets/db_root_password.txt
+  db_user_password:
+    file: ../secrets/db_user_password.txt
+  wp_admin_password:
+    file: ../secrets/wp_admin_password.txt
+  wp_user_password:
+    file: ../secrets/wp_user_password.txt
+  ftp_password:
+    file: ../secrets/ftp_password.txt
+  stats_password:
+    file: ../secrets/stats_password.txt

@@ -1,0 +1,82 @@
+server {
+	listen 443 ssl default_server;
+	listen [::]:443 ssl default_server;
+
+	server_name ${DOMAIN_NAME};
+
+	access_log /var/log/nginx/access.log;
+	access_log /var/log/nginx/shared/access.log combined;
+
+	ssl_certificate		/etc/nginx/ssl/inception.crt;
+	ssl_certificate_key	/etc/nginx/ssl/inception.key;
+	ssl_protocols		TLSv1.2 TLSv1.3;
+
+	root /var/www/html;
+	index index.php index.html;
+
+	location = /static {
+		return 301 /static/;
+	}
+
+	location /static/ {
+		proxy_pass http://static:8080/;
+		proxy_set_header Host				$host;
+		proxy_set_header X-Real-IP			$remote_addr;
+		proxy_set_header X-Forwarded-For	$proxy_add_x_forwarded_for;
+		proxy_set_header X-Forwarded-Proto	$scheme;
+	}
+
+	location = /adminer {
+		return 301 /adminer/;
+	}
+
+	location ^~ /adminer/ {
+		include fastcgi_params;
+		fastcgi_param SCRIPT_FILENAME /var/www/adminer/index.php;
+		fastcgi_pass adminer:9000;
+	}
+
+	location = /stats {
+		return 301 /stats/;
+	}
+
+	location /stats/ws {
+		auth_basic "Inception stats";
+		auth_basic_user_file /etc/nginx/.htpasswd;
+
+		proxy_pass http://goaccess:7890;
+		proxy_http_version			1.1;
+		proxy_set_header Upgrade	$http_upgrade;
+		proxy_set_header Connection	"upgrade";
+		proxy_set_header Host		$host;
+		proxy_read_timeout			1h;
+		access_log					off;
+	}
+
+	location ^~ /stats/ {
+		auth_basic "Inception stats";
+		auth_basic_user_file /etc/nginx/.htpasswd;
+
+		alias /var/www/stats/;
+		index index.html;
+		access_log off;
+	}
+
+	location / {
+		try_files $uri $uri/ /index.php$args;
+	}
+
+	location ~ /\.(?!well-known) {
+		deny all;
+	}
+
+	location ~* ^/wp-content/uploads/.*\.(php[0-9]?|phtml|phar)$ {
+		deny all;
+	}
+
+	location ~ \.php$ {
+		try_files $uri =404;
+		include snippets/fastcgi-php.conf;
+		fastcgi_pass wordpress:9000;
+	}
+}
