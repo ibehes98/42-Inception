@@ -6,7 +6,7 @@
 #    By: ibeltran <ibeltran@student.42madrid.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/10/06 12:07:25 by ibeltran          #+#    #+#              #
-#    Updated: 2026/10/06 13:38:54 by ibeltran         ###   ########.fr        #
+#    Updated: 2026/10/06 17:47:50 by ibeltran         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,8 +17,6 @@ RUN apt-get update \
 	&& rm -rf /var/lib/apt/lists/*
 
 COPY conf/redis.conf /etc/redis/redis.conf
-
-RUN chown redis:redis /etc/redis/redis.conf
 
 USER redis
 

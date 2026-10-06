@@ -1,16 +1,5 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    init.sh                                            :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: ibeltran <ibeltran@student.42madrid.com    +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/10/06 12:08:43 by ibeltran          #+#    #+#              #
-#    Updated: 2026/10/06 13:04:10 by ibeltran         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 #!/bin/bash
+
 set -eu
 
 SSL_DIR=/etc/nginx/ssl
@@ -28,10 +17,6 @@ openssl passwd -6 -stdin < /run/secrets/stats_password \
 
 chown root:www-data /etc/nginx/.htpasswd
 chmod 640 /etc/nginx/.htpasswd
-
-envsubst '${DOMAIN_NAME}' \
-	< /etc/nginx/templates/inception.conf.template \
-	> /etc/nginx/conf.d/inception.conf
 
 nginx -t
 

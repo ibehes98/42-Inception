@@ -6,7 +6,7 @@
 #    By: ibeltran <ibeltran@student.42madrid.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/10/06 12:06:21 by ibeltran          #+#    #+#              #
-#    Updated: 2026/10/06 13:30:28 by ibeltran         ###   ########.fr        #
+#    Updated: 2026/10/06 17:48:32 by ibeltran         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,8 +21,7 @@ RUN apt-get update \
 
 RUN mkdir -p /var/www/adminer /run/php \
 	&& curl -fsSL -o /var/www/adminer/index.php \
-		"https://github.com/vrana/adminer/releases/download/v${ADMINER_VERSION}/adminer-${ADMINER_VERSION}.php" \
-	&& chown -R www-data:www-data /var/www/adminer
+		"https://github.com/vrana/adminer/releases/download/v${ADMINER_VERSION}/adminer-${ADMINER_VERSION}.php"
 
 COPY conf/www.conf /etc/php/8.2/fpm/pool.d/www.conf
 

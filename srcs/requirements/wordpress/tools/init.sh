@@ -1,16 +1,5 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    init.sh                                            :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: ibeltran <ibeltran@student.42madrid.com    +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/10/06 12:08:54 by ibeltran          #+#    #+#              #
-#    Updated: 2026/10/06 13:28:46 by ibeltran         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 #!/bin/bash
+
 set -eu
 
 WP_ADMIN_PASSWORD=$(cat /run/secrets/wp_admin_password)
@@ -42,7 +31,7 @@ if [ ! -f wp-config.php ]; then
 	wp config create --allow-root \
 		--dbname="$MYSQL_DATABASE" \
 		--dbuser="$MYSQL_USER" \
-		--dbpass="$DB_PASSWORD" \
+		--dbpass="$DB_USER_PASSWORD" \
 		--dbhost="mariadb:3306"
 fi
 
@@ -77,5 +66,7 @@ fi
 if [ ! -f wp-content/object-cache.php ]; then
 	wp redis enable --allow-root
 fi
+
+chown -R www-data:www-data /var/www/html
 
 exec php-fpm8.2 -F

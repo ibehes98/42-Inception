@@ -6,18 +6,31 @@
 #    By: ibeltran <ibeltran@student.42madrid.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/10/06 10:35:22 by ibeltran          #+#    #+#              #
-#    Updated: 2026/10/06 13:46:50 by ibeltran         ###   ########.fr        #
+#    Updated: 2026/10/06 17:39:47 by ibeltran         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-include srcs/.env
+-include srcs/.env
 
 COMPOSE = docker compose -f srcs/docker-compose.yml --env-file srcs/.env
 
+SECRETS =	db_root_password \
+		 	db_user_password \
+		 	ftp_password \
+		 	stats_password \
+		 	wp_admin_password \
+		 	wp_user_password \
+
 all: up
 
-up: dirs
+up: check dirs
 	$(COMPOSE) up -d --build
+
+check:
+	@test -f srcs/.env || (echo "File .env not found"; exit 1)
+	@for s in $(SECRETS); docker
+		test -f secrets/$$s.txt || (echo "Secret $$s.txt not found"; exit 1);
+	done
 
 dirs:
 	mkdir -p $(DATA_PATH)/mariadb $(DATA_PATH)/wordpress \
@@ -27,12 +40,12 @@ down:
 	$(COMPOSE) down
 
 clean: down
-	docker system prune -af
+	$(COMPOSE) down -rmi all --remove-orphans
 
 fclean: down
-	$(COMPOSE) down -v --rmi all
+	$(COMPOSE) down -rmi all --volumes --remove-orphans
+	docker run --rm -v $(DATA_PATH):/data debian:bookworm sh -c 'rm -rf /data/*'
 	rm -rf $(DATA_PATH)
-	docker system prune -af
 
 re: fclean all
 
