@@ -6,7 +6,7 @@
 #    By: ibeltran <ibeltran@student.42madrid.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/10/06 10:35:22 by ibeltran          #+#    #+#              #
-#    Updated: 2026/10/06 17:39:47 by ibeltran         ###   ########.fr        #
+#    Updated: 2026/10/06 18:34:43 by ibeltran         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,8 +28,8 @@ up: check dirs
 
 check:
 	@test -f srcs/.env || (echo "File .env not found"; exit 1)
-	@for s in $(SECRETS); docker
-		test -f secrets/$$s.txt || (echo "Secret $$s.txt not found"; exit 1);
+	@for s in $(SECRETS); do \
+		test -f secrets/$$s.txt || (echo "Secret $$s.txt not found"; exit 1); \
 	done
 
 dirs:
@@ -40,10 +40,10 @@ down:
 	$(COMPOSE) down
 
 clean: down
-	$(COMPOSE) down -rmi all --remove-orphans
+	$(COMPOSE) down --rmi all --remove-orphans
 
 fclean: down
-	$(COMPOSE) down -rmi all --volumes --remove-orphans
+	$(COMPOSE) down --rmi all --volumes --remove-orphans
 	docker run --rm -v $(DATA_PATH):/data debian:bookworm sh -c 'rm -rf /data/*'
 	rm -rf $(DATA_PATH)
 
