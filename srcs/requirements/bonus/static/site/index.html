@@ -3,17 +3,106 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Inception - ibeltran</title>
+	<title>Inception — ibeltran</title>
 	<link rel="stylesheet" href="style.css">
 </head>
 <body>
-	<main>
+	<header class="intro">
 		<h1>Inception</h1>
-		<p>Web estática servida desde su propio contenedor detrás del NGINX principal.</p>
-		<ul>
-			<li><a href="/">WordPress</a></li>
-			<li><a href="/wp-admin/">Panel de administración</a></li>
-		</ul>
+		<p>Mapa de la infraestructura de ibeltran. Cada recuadro es una capa: la máquina virtual contiene la red de Docker, y la red contiene los contenedores. Pulsa un servicio para abrirlo.</p>
+	</header>
+
+	<main>
+		<section class="layer layer-host" aria-labelledby="host-title">
+			<h2 class="layer-title" id="host-title">Máquina virtual</h2>
+			<p class="layer-note">Solo dos puertas abiertas al exterior: 443 (HTTPS) y 21 (FTP).</p>
+
+			<div class="layer layer-network" aria-labelledby="net-title">
+				<h3 class="layer-title" id="net-title">Red Docker «inception»</h3>
+
+				<div class="tier">
+					<h4 class="tier-title">Entrada</h4>
+					<div class="nodes">
+						<a class="node node-gate" href="/" data-check="/static/" data-any-response>
+							<span class="node-name">NGINX</span>
+							<span class="node-desc">Único punto de entrada web, TLS 1.2 y 1.3</span>
+							<span class="node-meta">puerto 443</span>
+							<span class="status" aria-live="polite"><span class="dot"></span><span class="status-text">Comprobando…</span></span>
+						</a>
+					</div>
+				</div>
+
+				<div class="tier">
+					<h4 class="tier-title">Aplicaciones</h4>
+					<div class="nodes">
+						<a class="node" href="/" data-check="/">
+							<span class="node-name">WordPress</span>
+							<span class="node-desc">La web principal</span>
+							<span class="node-meta">/</span>
+							<span class="status" aria-live="polite"><span class="dot"></span><span class="status-text">Comprobando…</span></span>
+						</a>
+						<a class="node" href="/wp-admin/" data-check="/wp-admin/">
+							<span class="node-name">Panel de WordPress</span>
+							<span class="node-desc">Entradas, usuarios y ajustes</span>
+							<span class="node-meta">/wp-admin/</span>
+							<span class="status" aria-live="polite"><span class="dot"></span><span class="status-text">Comprobando…</span></span>
+						</a>
+						<a class="node" href="/adminer/" data-check="/adminer/">
+							<span class="node-name">Adminer</span>
+							<span class="node-desc">Explorar la base de datos</span>
+							<span class="node-meta">/adminer/</span>
+							<span class="status" aria-live="polite"><span class="dot"></span><span class="status-text">Comprobando…</span></span>
+						</a>
+						<a class="node" href="/stats/" data-check="/stats/">
+							<span class="node-name">Estadísticas</span>
+							<span class="node-desc">Visitas en tiempo real con GoAccess</span>
+							<span class="node-meta">/stats/</span>
+							<span class="status" aria-live="polite"><span class="dot"></span><span class="status-text">Comprobando…</span></span>
+						</a>
+						<a class="node" href="/static/" data-check="/static/">
+							<span class="node-name">Esta página</span>
+							<span class="node-desc">Web estática en su propio contenedor</span>
+							<span class="node-meta">/static/</span>
+							<span class="status" aria-live="polite"><span class="dot"></span><span class="status-text">Comprobando…</span></span>
+						</a>
+					</div>
+				</div>
+
+				<div class="tier">
+					<h4 class="tier-title">Datos y caché</h4>
+					<div class="nodes">
+						<div class="node node-internal">
+							<span class="node-name">MariaDB</span>
+							<span class="node-desc">Base de datos de WordPress</span>
+							<span class="node-meta">puerto 3306, solo red interna</span>
+							<span class="status"><span class="dot dot-internal"></span><span class="status-text">No accesible desde el navegador</span></span>
+						</div>
+						<div class="node node-internal">
+							<span class="node-name">Redis</span>
+							<span class="node-desc">Caché de objetos de WordPress</span>
+							<span class="node-meta">puerto 6379, solo red interna</span>
+							<span class="status"><span class="dot dot-internal"></span><span class="status-text">No accesible desde el navegador</span></span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="ftp">
+				<h3 class="ftp-title">Servidor FTP</h3>
+				<p>Sube ficheros a WordPress por FTPS (cifrado obligatorio). Desde la máquina virtual:</p>
+				<div class="command">
+					<code id="ftp-command">lftp -u ibeltran_ftp -e "set ftp:ssl-force true; set ssl:verify-certificate no" ftp://127.0.0.1</code>
+					<button type="button" class="button" id="copy-ftp">Copiar comando</button>
+				</div>
+			</div>
+		</section>
 	</main>
+
+	<footer class="checks">
+		<p id="last-check">Aún no se ha comprobado el estado.</p>
+		<button type="button" class="button" id="check-now">Comprobar ahora</button>
+	</footer>
+
+	<script src="script.js"></script>
 </body>
 </html>
